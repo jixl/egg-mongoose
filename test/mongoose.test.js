@@ -6,14 +6,21 @@ const mm = require('egg-mock');
 
 describe('test/mongoose.test.js', () => {
   let app;
-  before(() => {
+  before(function* () {
     app = mm.app({
       baseDir: 'apps/mongoose-test',
     });
-    return app.ready();
+    app2 = mm.app({
+      baseDir: 'apps/mongoose-test-custom',
+    });
+    yield app.ready();
+    yield app2.ready();
   });
 
-  after(() => app.close());
+  after(() => {
+    app.close();
+    app2.close();
+  });
   afterEach(mm.restore);
   afterEach(function* () {
     yield app.model.User.remove({});
@@ -45,6 +52,10 @@ describe('test/mongoose.test.js', () => {
 
   it('should not load unformatted mongoose', function* () {
     assert(app.model.other === undefined);
+  });
+
+  it('should load custom promise', function* () {
+    assert(app.__mongoose.Promise === undefined);
   });
 
 });
